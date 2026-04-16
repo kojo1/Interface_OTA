@@ -160,7 +160,7 @@ int main(int argc, char** argv)
         goto exit;
     }
 
-    ret = wolfSSL_UseKeyShare(ssl, WOLFSSL_P256_ML_KEM_512);
+    ret = wolfSSL_UseKeyShare(ssl, WOLFSSL_X25519MLKEM768);
     if (ret != WOLFSSL_SUCCESS) {
         printf("\nERROR: wolfSSL_UseKeyShare error = %d\n", ret);
         return 1;

@@ -9,7 +9,7 @@ This demo demonstrates the capabilities of the new FRDM-MCXN947.
 ### Demo   
 Simply connects to an AWS broker, subscribes, and publishes a message.
 
-*This is currently not a stable demo on the FRDM-MCXN947 Board.*
+This demo is stable on the FRDM-MCXN947 board.
 
 #### Boards:        FRDM-MCXN947
 #### Categories:    RTOS, Zephyr, Networking
@@ -27,7 +27,7 @@ Simply connects to an AWS broker, subscribes, and publishes a message.
 8. [Release Notes](#step8)
 
 ## 1. Software<a name="step1"></a>
-- [MCUXpresso for VS Code 1.5.61 or newer](https://www.nxp.com/products/processors-and-microcontrollers/arm-microcontrollers/general-purpose-mcus/lpc800-arm-cortex-m0-plus-/mcuxpresso-for-visual-studio-code:MCUXPRESSO-VSC?cid=wechat_iot_303216)
+- [MCUXpresso for VS Code 25.7.59 or newer](https://www.nxp.com/products/processors-and-microcontrollers/arm-microcontrollers/general-purpose-mcus/lpc800-arm-cortex-m0-plus-/mcuxpresso-for-visual-studio-code:MCUXPRESSO-VSC?cid=wechat_iot_303216)
 
 - [Zephyr Setup](https://docs.zephyrproject.org/latest/develop/getting_started/index.html)
     - [wolfSSL as a Module added to Zephyr](https://github.com/wolfSSL/wolfssl/blob/master/zephyr/README.md)
@@ -47,8 +47,8 @@ Simply connects to an AWS broker, subscribes, and publishes a message.
     - git 
 
  - Zephyr:
-    - SDK 0.16.8
-    - Version 4.0.0
+    - SDK 1.0.1
+    - Version 4.4.0
 
 ## 2. Hardware<a name="step2"></a>
 - [FRDM-MCXN947](https://www.nxp.com/products/processors-and-microcontrollers/arm-microcontrollers/general-purpose-mcus/mcx-arm-cortex-m/mcx-n94x-and-n54x-mcus-with-dual-core-arm-cortex-m33-eiq-neutron-npu-and-edgelock-secure-enclave-core-profile:MCX-N94X-N54X)   

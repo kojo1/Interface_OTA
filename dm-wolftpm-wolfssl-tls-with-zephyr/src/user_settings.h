@@ -309,7 +309,8 @@ extern "C" {
 
     /* Define the maximum math bits used */
     #if !defined(NO_RSA) || !defined(NO_DH)
-        #define SP_INT_BITS 2048
+        /* TPM generates RSA-4096 keys by default (WOLFTPM2_WRAP_RSA_KEY_BITS) */
+        #define SP_INT_BITS 4096
     #elif defined(HAVE_ECC)
         #define SP_INT_BITS 256
     #endif
@@ -349,7 +350,7 @@ extern "C" {
         #define WOLFSSL_HAVE_SP_RSA
         //#define WOLFSSL_SP_NO_2048
         //#define WOLFSSL_SP_NO_3072
-        //#define WOLFSSL_SP_4096
+        #define WOLFSSL_SP_4096   /* needed for 4096-bit TPM RSA keys */
     #endif
     #ifndef NO_DH
         #define WOLFSSL_HAVE_SP_DH
@@ -417,6 +418,10 @@ extern "C" {
 
 #define WOLFTPM_I2C
 #define WOLFTPM_SLB9673
+/* CSR PEM output buffer; default 2048 (MAX_CONTEXT_SIZE) is too small for
+ * an RSA-2048 CSR with the serverAuth/clientAuth/codeSigning/... key usage
+ * list the example uses. */
+#define MAX_PEM_SIZE 4096
 #define WOLFTPM_EXAMPLE_HAL
 #define WOLFTPM_ADV_IO
 #define WOLFTPM_INCLUDE_IO_FILE

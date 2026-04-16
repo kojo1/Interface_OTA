@@ -9,7 +9,7 @@ The projects in this repo are intended to be used with NXP's [MCUXpresso for VS-
 
 To use a demo project, simply use the provided `setup.sh` on the given project you want to run.
 
-All projects were initially tested with `Zephyr v4.0.0` and `Zephyr SDK 0.16.8`
+All projects were initially tested with `Zephyr v4.4.0` and `Zephyr SDK 1.0.1`
 
 ### 1. Setup
 
@@ -76,15 +76,15 @@ manifest:
     # <your other projects>
     - name: wolfssl
       path: modules/crypto/wolfssl
-      revision: v5.7.6-stable
+      revision: v5.9.1-stable
       remote: wolfssl
     - name: wolfssh
       path: modules/lib/wolfssh
-      revision: v1.4.18-stable
+      revision: v1.4.22-stable
       remote: wolfssh
     - name: wolfmqtt
       path: modules/lib/wolfmqtt
-      revision: v1.19.1
+      revision: v2.0.0
       remote: wolfmqtt
 ```
 

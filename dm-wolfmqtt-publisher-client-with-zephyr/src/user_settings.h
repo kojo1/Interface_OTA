@@ -117,10 +117,14 @@ extern "C" {
 #define HAVE_SERVER_RENEGOTIATION_INFO
 #define HAVE_SNI /* optional Server Name Indicator (SNI) */
 
+
 /* ASN */
 #define WOLFSSL_ASN_TEMPLATE /* use newer ASN template asn.c code (default) */
+/* Relaxed ASN parsing: the Starfield Services Root CA G2 (cross-signer of
+ * Amazon Root CA 1) uses a legacy serial number of 0, which wolfSSL's
+ * strict mode rejects. Allow it so the CA loads. */
+#define WOLFSSL_NO_ASN_STRICT
 #if 0 /* optional space reductions */
-    #define WOLFSSL_NO_ASN_STRICT
     #define IGNORE_NAME_CONSTRAINTS
 #endif
 

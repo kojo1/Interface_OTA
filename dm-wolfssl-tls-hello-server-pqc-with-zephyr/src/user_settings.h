@@ -29,6 +29,7 @@ extern "C" {
 /* Post-Quantum */
 #define WOLFSSL_HAVE_MLKEM
 #define WOLFSSL_WC_MLKEM
+#define WOLFSSL_PQC_HYBRIDS   /* enable X25519MLKEM768 & other TLS 1.3 PQ/T hybrids */
 #define HAVE_DILITHIUM
 #define WOLFSSL_WC_DILITHIUM
 #define WOLFSSL_SHAKE128
@@ -62,6 +63,8 @@ extern "C" {
 #define NO_WRITEV
 #define NO_MAIN_FUNCTION
 #define NO_MAIN_DRIVER
+#define WOLFCRYPT_TEST
+#define WOLFCRYPT_BENCHMARK
 #define NO_ASN_TIME
 #define USE_CERT_BUFFERS_2048
 #define USE_ANY_ADDR
@@ -213,7 +216,7 @@ extern "C" {
 #endif
 
 /* Ed25519 / Curve25519 */
-#if 0
+#if 1
     #define HAVE_CURVE25519
     #define HAVE_ED25519 /* ED25519 Requires SHA512 */
 

@@ -30,3 +30,11 @@
     status = "okay";
 };
 
+/* Derive a stable MAC from the MCXN947's UUID instead of the board's
+ * default random-at-boot MAC. Paired with
+ * CONFIG_ETH_NXP_ENET_QOS_MAC_UNIQUE_MAC_ADDRESS=y in prj.conf.
+ */
+&enet_mac {
+    /delete-property/ zephyr,random-mac-address;
+    nxp,unique-mac;
+};

@@ -25,7 +25,13 @@
 #include <wolfssl/ssl.h>        /* Basic functionality for TLS */
 #include <wolfssl/certs_test.h> /* Needed for Cert Buffers */
 #include <wolfssl/wolfcrypt/hash.h>
+#ifdef WOLFCRYPT_BENCHMARK
 #include <wolfcrypt/benchmark/benchmark.h>
+#endif
+
+#ifdef WOLFCRYPT_TEST
+#include <wolfcrypt/test/test.h>
+#endif
 /* wolfSSL Includes End */
 
 /* Standard Packages Start */
@@ -55,7 +61,7 @@
 
 /* Use DHCP auto IP assignment or static assignment */
 #undef  DHCP_ON
-#define DHCP_ON 0   /* Set to true (1) if you want auto assignment IP, */
+#define DHCP_ON 1   /* Set to true (1) if you want auto assignment IP, */
                     /* set false (0) for statically defined. */
                     /* Make sure to avoid IP conflicts on the network you */
                     /* assign this to, check the defaults before using. */
@@ -134,6 +140,19 @@ int startNetwork() {
     return 0;
 }
 
+#ifdef WOLFCRYPT_TEST
+int runWolfcryptTest(void)
+{
+    int ret = 0;
+
+    ret = wolfcrypt_test(NULL);
+    printf("wolfCrypt Test returned %d.\n", ret);
+
+    return ret;
+}
+#endif
+
+#ifdef WOLFCRYPT_BENCHMARK
 int runWolfcryptBenchmark(void)
 {
     int ret = 0;
@@ -143,6 +162,7 @@ int runWolfcryptBenchmark(void)
 
     return ret;
 }
+#endif
 
 /* Return 1 if the artifacts are in NVRAM, 0 otherwise */
 static int artifacts_are_in_nvram() {
@@ -284,7 +304,7 @@ int startServer(void) {
             return 1;
         }
 
-        ret = wolfSSL_UseKeyShare(ssl, WOLFSSL_P256_ML_KEM_512);
+        ret = wolfSSL_UseKeyShare(ssl, WOLFSSL_X25519MLKEM768);
         if (ret != WOLFSSL_SUCCESS) {
             printf("\nERROR: wolfSSL_UseKeyShare error = %d\n", ret);
             return 1;
@@ -339,9 +359,17 @@ int main(void)
         return 1;
     }
 
+#ifdef WOLFCRYPT_TEST
+    if (runWolfcryptTest() != 0) {
+        printf("wolfCrypt Test Failed...Ignoring...\n");
+    }
+#endif
+
+#ifdef WOLFCRYPT_BENCHMARK
     if (runWolfcryptBenchmark() != 0) {
         printf("wolfCrypt Benchmark Failed...Ignoring...\n");
     }
+#endif
 
     if (artifacts_are_in_nvram() == 0) {
         printf("Artifacts are NOT in NVRAM\n");

@@ -44,7 +44,8 @@ echo "Running autogen.sh..."
 
 echo ""
 echo "Configuring wolfSSL with ML-KEM and ML-DSA support..."
-./configure --enable-mlkem --enable-dilithium
+./configure --enable-mlkem --enable-dilithium --enable-curve25519 --enable-ed25519 \
+            CPPFLAGS="-DWOLFSSL_PQC_HYBRIDS"
 
 echo ""
 echo "Building wolfSSL..."

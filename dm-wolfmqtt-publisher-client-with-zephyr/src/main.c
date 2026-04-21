@@ -65,6 +65,8 @@
 #include <zephyr/net/socket.h>
 #include <zephyr/net/sntp.h>
 #include <zephyr/net/dns_resolve.h>
+#include <arpa/inet.h>
+#include <netdb.h>
 /* Zephyr Includes End */
 
 /* Other */
@@ -457,6 +459,16 @@ static int mqtt_tls_cb(MqttClient* client)
         client->tls.ssl = wolfSSL_new(client->tls.ctx);
         if (client->tls.ssl == NULL) {
             PRINTF("Failed to create WOLFSSL object");
+            wolfSSL_CTX_free(client->tls.ctx);
+            return WOLFSSL_FAILURE;
+        }
+
+        /* wolfSSL v5.9 made PQC hybrid key-shares the default; on classic-only
+         * builds that causes BAD_FUNC_ARG during ClientHello. Pin P-256. */
+        if (wolfSSL_UseKeyShare(client->tls.ssl, WOLFSSL_ECC_SECP256R1)
+                != WOLFSSL_SUCCESS) {
+            PRINTF("Failed to pin P-256 key share");
+            wolfSSL_free(client->tls.ssl);
             wolfSSL_CTX_free(client->tls.ctx);
             return WOLFSSL_FAILURE;
         }

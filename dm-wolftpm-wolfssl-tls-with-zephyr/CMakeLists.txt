@@ -17,6 +17,7 @@ endif()
 
 target_sources(app PRIVATE src/main.c)
 target_sources(app PRIVATE src/mikroBUS.c)
+target_sources(app PRIVATE src/zephyr_compat.c)
 target_sources(app PRIVATE __repo__/modules/lib/wolftpm/examples/csr/csr.c)
 target_sources(app PRIVATE __repo__/modules/lib/wolftpm/examples/bench/bench.c)
 target_sources(app PRIVATE __repo__/modules/lib/wolftpm/examples/tpm_test_keys.c)
@@ -48,6 +49,20 @@ target_include_directories(app PRIVATE __repo__/modules/crypto/wolfssl/wolfcrypt
 target_include_directories(app PRIVATE __repo__/modules/crypto/wolfssl/wolfcrypt/benchmark)
 add_definitions(-DWOLFSSL_USER_SETTINGS)
 add_definitions(-DWOLFTPM_USER_SETTINGS)
+
+# wolftpm's examples/tls/tls_common.h uses POSIX socket names (gethostbyname,
+# struct hostent, fd_set, FD_ZERO/SET/ISSET, select, inet_addr) without
+# including the POSIX headers. Pre-Zephyr 3.1 CONFIG_NET_SOCKETS_POSIX_NAMES
+# globally aliased these inside <zephyr/net/socket.h>, but that Kconfig was
+# removed in Zephyr v4.x. Force-include the POSIX headers for the TLS
+# example TUs so CONFIG_POSIX_API=y resolves the symbols via Zephyr's POSIX
+# wrappers. Remove once the upstream wolftpm headers include these directly.
+set_source_files_properties(
+    __repo__/modules/lib/wolftpm/examples/tls/tls_server.c
+    __repo__/modules/lib/wolftpm/examples/tls/tls_client.c
+    PROPERTIES COMPILE_OPTIONS
+    "-include;netdb.h;-include;arpa/inet.h;-include;sys/select.h;-include;${CMAKE_SOURCE_DIR}/src/zephyr_compat.h"
+)
 
 
 # Check if the command is executed by redirecting output to a file (Unix-like systems)

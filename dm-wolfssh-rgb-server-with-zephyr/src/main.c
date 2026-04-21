@@ -420,8 +420,8 @@ int startServer(void)
     wolfSSH_SetUserAuth(sshCTX, wsUserAuthCallback);
 
     /* Use the embedded server key */
-    if (wolfSSH_CTX_UsePrivateKey_buffer(sshCTX, rsa_key_der_2048, \
-            sizeof_rsa_key_der_2048, WOLFSSH_FORMAT_ASN1) != WS_SUCCESS) {
+    if (wolfSSH_CTX_UsePrivateKey_buffer(sshCTX, rsa_key_der_2048_ssh, \
+            sizeof_rsa_key_der_2048_ssh, WOLFSSH_FORMAT_ASN1) != WS_SUCCESS) {
         printf("Error using server key\n");
         return 1;
     }

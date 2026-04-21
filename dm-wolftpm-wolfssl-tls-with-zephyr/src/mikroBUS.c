@@ -4,7 +4,7 @@
 #include <zephyr/drivers/clock_control.h>
 #include <fsl_clock.h>
 
-static int flexcomm3_clock_init(const struct device *dev)
+static int flexcomm3_clock_init(void)
 {
 
 #if DT_NODE_HAS_STATUS(DT_NODELABEL(flexcomm3), okay)
@@ -12,6 +12,7 @@ static int flexcomm3_clock_init(const struct device *dev)
 	CLOCK_AttachClk(kFRO12M_to_FLEXCOMM3);
 #endif
 
+	return 0;
 }
 
 SYS_INIT(flexcomm3_clock_init, PRE_KERNEL_1,

@@ -51,7 +51,6 @@
 #include <zephyr/net/net_mgmt.h>
 #include <zephyr/net/net_config.h>
 #include <zephyr/net/net_ip.h>
-#include <zephyr/sys/reboot.h>
 /* Zephyr Includes End */
 
 /* mqttClient Includes Start */
@@ -77,14 +76,13 @@ volatile int          g_update_state_rc    = -1;
 
 #define LOCAL_DEBUG 0       /* Use for wolfSSL's internal Debugging */
 
-/* Use DHCP auto IP assignment or static assignment.
- * Follows CONFIG_NET_DHCPV4 from prj.conf so both stay in sync. */
+/* Use DHCP auto IP assignment or static assignment */
 #undef  DHCP_ON
-#ifdef CONFIG_NET_DHCPV4
-    #define DHCP_ON 1
-#else
-    #define DHCP_ON 0
-#endif
+#define DHCP_ON 1   /* Set to true (1) if you want auto assignment IP, */
+                    /* set false (0) for statically defined. */
+                    /* Make sure to avoid IP conflicts on the network you */
+                    /* assign this to, check the defaults before using. */
+                    /* If unsure, leave DHCP_ON set to 1 */
  
 #if DHCP_ON == 0
 /* Define Static IP, Gateway, and Netmask */
@@ -312,6 +310,8 @@ int startServer(void) {
 
 int main(void)
 {
+    printf("\nRunning wolfSSL example from the %s!\n", CONFIG_BOARD);
+
     {
         uint8_t  bst = 0xAA, ust = 0xAA;
         int      brc = wolfBoot_nsc_get_partition_state(PART_BOOT,   &bst);
@@ -374,7 +374,6 @@ int main(void)
             wolfBoot_nsc_update_trigger();
             irq_unlock(irq_key);
             k_sched_unlock();
-            sys_reboot(SYS_REBOOT_COLD);
         }
 #else
     if (startServer() != 0){

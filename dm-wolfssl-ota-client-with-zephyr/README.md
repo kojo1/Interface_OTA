@@ -68,31 +68,28 @@ This app is intended to work with wolfBoot, which is a secure bootloader running
 
 ## 3. Setup<a name="step3"></a>
 
-### Limitation
-This setup is not tested on native Windows.
-Some scripts may not work for the case.
-
 ### Import the Project
 Follow section 1: `Setup` in the top level [README](../README.md).
 The project should be called `dm-wolfssl-ota-client-with-zephyr`.
 You need to several stuff before build.
 
-### Board selection
-This application runs in the non-secure world and is booted by wolfBoot running in the secure world,
-so it must be built for the `frdm_mcxn947/mcxn947/cpu0/ns` board. This is set automatically in
-`CMakeLists.txt` (along with the `app.overlay` devicetree overlay) — no `CMakePresets.json` edit is
-required. To port the app to a different board, override `BOARD` on the command line
-(e.g. `cmake . --preset debug -DBOARD=<your_board>`).
+### Add cacheVariables
+This application runs in the non-secure world and is booted by wolfBoot running in the secure world.
+Please add the following cacheVariables into your CMakePresets.json to use the ns board setting in your build:
+```
+"BOARD": "frdm_mcxn947/mcxn947/cpu0/ns",
+"DTC_OVERLAY_FILE": "app.overlay",
+"WOLFBOOT_ROOT": {
+          "value": "/Path/To/Your/wolfBoot",
+          "type": "PATH"
+        },
+```
 
 ### Setup wolfBoot
-wolfBoot is included in the west workspace at `__repo__/modules/bootloader/wolfboot/`.
-
-No manual setup is required. Running `cmake . --preset debug` automatically:
-1. Applies the FRDM-MCXN947 board patch (`wolfbootConfig/0001-Update-configs-and-memory-map.patch`)
-2. Builds the wolfBoot binary and keytools
-3. Copies `wolfboot.bin` and `wolfboot.elf` into the build directory
-
-If you run `west update`, the patch is re-applied automatically on the next `cmake .` invocation.
+We need to build the secure boot loader using wolfBoot.
+Please get the wolfBoot version 2.8.0 from official [Github](https://github.com/wolfSSL/wolfBoot).
+Please apply `wolfbootConfig/0001-Update-configs-and-memory-map.patch` to add the specific initialization and change the memory map.
+Then, please build it with `wolfbootConfig/.config`.
 
 ### Build and Prepare application image
 You can trigger the build from the MCUXpresso for VS Code extension, or build manually.
@@ -100,12 +97,20 @@ You can trigger the build from the MCUXpresso for VS Code extension, or build ma
 cmake . --preset debug
 cmake --build debug --parallel
 ```
-After the build completes, the following files are produced automatically:
-- `debug/zephyr/zephyr_stripped_v1_signed.bin` — boot image (version 1)
-- `debug/zephyr/zephyr_stripped_v2_signed.bin` — OTA update image (version 2)
-- `debug/zephyr/factory.bin` — combined image for initial programming (wolfboot at 0x0 + signed app at 0x10000)
-
-No manual strip, sign, or assembly commands are needed.
+You'll see the outputs like `debug/zephyr/zephyr.bin`.
+To boot this application by wolfBoot, you need to add the image header and sign it using tools contained in wolfBoot.
+First of all, we need to strip first 1024 bytes for image header space.
+```
+dd if=debug/zephyr/zephyr.bin of=debug/zephyr/zephyr_stripped.bin bs=1 skip=1024
+```
+Then, do this to sign the image:
+```
+IMAGE_HEADER_SIZE=1024 /Path/To/wolfBoot/tools/keytools/sign 
+--ecc384 --sha384 /Path/To/YourProject/dm-wolfssl-ota-client-with-zephyr/debug/zephyr/zephyr_stripped.bin 
+/Path/To/wolfBoot/wolfboot_signing_private_key.der 1
+```
+The output file like `debug/zephyr/zephyr_stripped_v1_signed.bin` is ready to flash now.
+Please repeat the same command with version 2 or greater to produce another image file which is to be downloaded during OTA sequence.
 
 ### Build fwserver
 fwserver is a simple OTA server app running on your laptop.
@@ -161,11 +166,10 @@ In src/mqttClient/mqttexample.h:
 
 ### Program the wolfBoot and application
 Flash both of wolfBoot and application image file to FRDM-MCXN947.
-factory.bin is automatically generated based on both images.
-You may need to let the MCXN enters to ISP mode to flash new image. Please check the [official application note](https://www.nxp.com/docs/en/application-note/AN14460.pdf) for the details of flash procedures.
 You can use LinkServer, which is installed with MCUXpresso toolchains.
 ```
-/Path/To/YourLinkServer/LinkServer flash MCXN947 load debug/zephyr/factory.bin:0x0
+/Path/To/YourLinkServer/LinkServer_25.12.83/LinkServer flash  MCXN947 load debug/zephyr/zephyr_stripped_v1_signed.bin:0x10000
+debug/zephyr/wolfboot.bin:0x10000000
 ```
 
 ## 4. Run Demonstrator<a name="step4"></a>
@@ -176,20 +180,19 @@ Please connect to the Serial Output of the FRDM-MCXN947 via:
 
 Push reset button on the FRDM-MCXN947 board and view the startup message. Note the IP address and MQTT subscriptions.
 ```
-Boot partition: 0x10000 (sz 313728, ver 0x1, type 0x601)
-Partition 1 header magic 0xFFFFFFFF invalid at 0xD0000
-Boot partition: 0x10000 (sz 313728, ver 0x1, type 0x601)
+Boot partition: 0x10000 (sz 300508, ver 0x1, type 0x601)
+Update partition: 0xD0000 (sz 300508, ver 0x2, type 0x601)
+Boot partition: 0x10000 (sz 300508, ver 0x1, type 0x601)
 Booting version: 0x1
-*** Booting Zephyr OS build v4.4.0-753-gf01a10b99584 ***
-[wolfBoot] BOOT v=1 state=0xaa(rc=-1)  UPDATE v=0 state=0xaa(rc=-1) -> NO_UPDATE
+*** Booting Zephyr OS build v4.0.0-5-gfd6b8b33303b ***
+
+Running wolfSSL example from the frdm_mcxn947!
 IP Address is: 192.168.1.70
 Running wolfMQTT firmware client for OTA
 MQTT Firmware Client: QoS 2, Use TLS 1
 MQTT Net Init: Success (0)
 MQTT Init: Success (0)
 NetConnect: Host 192.168.1.10, Port 8883, Timeout 5000 ms, Use TLS 1
-[00:00:00.050,000] <inf> phy_mii: PHY (0) ID 7C121
-[00:00:00.052,000] <inf> eth_nxp_enet_qos_mac: Link is down
 MQTT TLS Setup (1)
 MQTT TLS Verify Callback for fwclient: PreVerify 0, Error -188 (no support for error strings built in)
   Subject's domain name is MyMosquittoCA
@@ -197,15 +200,12 @@ MQTT TLS Verify Callback for fwclient: PreVerify 0, Error -188 (no support for e
 MQTT Socket Connect: Success (0)
 MQTT Connect: Proto (v3.1.1), Success (0)
 MQTT Connect Ack: Return Code 0, Session Present 0
-MQTT Subscribe: Success (0)
+[00MQTT Subscribe: Success (0)
   Topic wolfMQTT/example/command, Qos 2, Return Code 2
 MQTT Subscribing to firmware topic...
-[0MQTT Subscribe: Success (0)
+:0MQTT Subscribe: Success (0)
   Topic wolfMQTT/example/firmware, Qos 2, Return Code 2
 MQTT Waiting for message...
-MQTT Status Publish: Success (0) -> {"boot":1,"update":0,"state":"NO_UPDATE","raw":170,"rc":-1}
-0:00:01.755,000] <inf> phy_mii: PHY (0) Link speed 100 Mb, full duplex
-[00:00:01.755,000] <inf> eth_nxp_enet_qos_mac: Link is up
 ```
 Open another terminal and run fwserver:
 ```
@@ -222,7 +222,7 @@ MQTT Socket Disconnect: Success (0)
 Firmware client completed successfully!
 Triggering wolfBoot update
 ```
-Reset is triggered automatically now.
+Push the reset button again.
 wolfBoot detects the new image in the update partition and verifies it.
 Then, wolfBoot will swap the downloaded image from update partition to boot partition.
 ```

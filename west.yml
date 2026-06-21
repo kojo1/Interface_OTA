@@ -14,7 +14,7 @@ manifest:
     - name: wolftpm
       url-base: https://github.com/wolfssl
     - name: wolfboot
-      url-base: https://github.com/wolfssl
+      url-base: https://github.com/kojo1
 
   projects:
     - name: zephyr
@@ -44,6 +44,6 @@ manifest:
       revision: v3.10.0
       remote: wolftpm
     - name: wolfboot
-      path: modules/bootloader/wolfboot
-      revision: v2.8.0
+      path: wolfboot
+      revision: v2.8.1
       remote: wolfboot
